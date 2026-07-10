@@ -11,6 +11,8 @@
     "test:phase": "node scripts/test-phases.mjs",
     "test:phase:1": "node scripts/test-phases.mjs 1",
     "test:phase:2": "node scripts/test-phases.mjs 2",
+    "test:phase:3": "node scripts/test-phases.mjs 3",
+    "test:anti-stall": "pnpm --filter @squeaky-wheel/backend test",
     "test:phase:list": "node scripts/test-phases.mjs --list"
   },
   "engines": {

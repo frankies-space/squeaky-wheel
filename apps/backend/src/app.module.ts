@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AntiStallModule } from './anti-stall/anti-stall.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './db/database.module';
 import { GoalsModule } from './goals/goals.module';
@@ -14,6 +15,7 @@ import { VenturesModule } from './ventures/ventures.module';
     UsersModule,
     VenturesModule,
     GoalsModule,
+    AntiStallModule,
   ],
 })
 export class AppModule {}
