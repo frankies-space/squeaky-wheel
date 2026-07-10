@@ -18,6 +18,7 @@ export interface TaskResponse {
 export type DecomposeOutputMethod = 'tool_call' | 'mock';
 
 export interface DecomposeGoalResponse {
+  traceId: string;
   goalId: string;
   ventureId: string;
   outputMethod: DecomposeOutputMethod;

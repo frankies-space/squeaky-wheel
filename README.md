@@ -68,6 +68,10 @@ Send any `Authorization: Bearer dev` header.
 | `POST` | `/goals/:id/decompose` | Decompose goal into AI task tree (`LLM_PROVIDER=mock` by default) |
 | `GET` | `/goals/:id/tasks` | List tasks for a goal |
 | `GET` | `/anti-stall/scores` | Urgency scores per venture (anti-stall engine) |
+| `GET` | `/checkin/today` | Propose today's 3 tasks (anti-stall + mock calendar) |
+| `POST` | `/checkin/validate-task-count` | Rule-of-3 guard (`taskCount` must be 3) |
+| `GET` | `/orchestrator/traces` | Recent orchestrator runs (debug/monitoring) |
+| `GET` | `/orchestrator/traces/:id` | Single trace with step timeline |
 
 ### Monorepo layout
 
@@ -103,6 +107,23 @@ pnpm test:phase        # run all phases (unimplemented phases are skipped)
 ```
 
 Requires the backend running (`pnpm dev:backend`) and migrations applied. Uses `AUTH_DEV_BYPASS` from `.env` by default (`Authorization: Bearer dev`).
+
+### Monitoring orchestrator runs
+
+Every decomposition and daily-proposal call records a **trace** with step-by-step timing. Use this to see where bugs occur.
+
+```bash
+# Live dashboard in terminal (polls every 2s)
+pnpm monitor:orchestrator
+
+# Show only failures
+MONITOR_STATUS=error pnpm monitor:orchestrator
+
+# After any API call, inspect a specific trace
+curl -H "Authorization: Bearer dev" http://localhost:3000/orchestrator/traces/<traceId>
+```
+
+API responses include `traceId` — pass it to `GET /orchestrator/traces/:id` for the full step timeline (`anti_stall_scored`, `llm_request_started`, `plan_persisted`, etc.). Server logs also emit JSON lines tagged `OrchestratorTrace`.
 
 Override via env:
 

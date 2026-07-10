@@ -13,6 +13,7 @@ import { DRIZZLE, type Database } from '../db/database.module';
 import { goals, tasks, ventures } from '../db/schema';
 import { flattenTaskTree, validateTaskTree } from '../tasks/persist-task-tree';
 import { buildMockTaskTree } from './mock-decomposition';
+import { OrchestratorTraceService } from './orchestrator-trace.service';
 import { LlmProviderService } from './provider';
 import { buildDecompositionContext, SYSTEM_PROMPT } from './system-prompt';
 import {
@@ -32,39 +33,70 @@ export class DecompositionService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly llmProvider: LlmProviderService,
+    private readonly traceService: OrchestratorTraceService,
   ) {}
 
   async decomposeGoal(input: DecomposeGoalInput): Promise<DecomposeGoalResponse> {
-    const context = await this.loadGoalContext(input.userId, input.goalId);
-
-    if (context.goal.status !== 'active') {
-      throw new BadRequestException('Only active goals can be decomposed');
-    }
-
     const mode = this.llmProvider.getMode();
-    const treeInput =
-      mode === 'mock'
-        ? buildMockTaskTree(context.goal.title)
-        : await this.generateTaskTreeWithLlm(context, input.additionalContext);
 
-    validateTaskTree(treeInput.root);
-
-    const persisted = await this.persistTaskTree(
-      context.goal.ventureId,
-      context.goal.id,
-      treeInput,
-    );
-
-    return {
-      goalId: context.goal.id,
-      ventureId: context.goal.ventureId,
+    const { result, traceId } = await this.traceService.runTraced({
+      flow: 'decomposition',
+      userId: input.userId,
+      input: {
+        goalId: input.goalId,
+        additionalContext: input.additionalContext,
+        llmMode: mode,
+      },
       outputMethod: mode === 'mock' ? 'mock' : 'tool_call',
-      assistantMessage:
-        mode === 'mock'
-          ? `Decomposed "${context.goal.title}" into ${persisted.length} tasks (mock provider).`
-          : null,
-      tasks: persisted.map(toTaskResponse),
-    };
+      fn: async (activeTraceId) => {
+        const context = await this.loadGoalContext(input.userId, input.goalId);
+        this.traceService.addStep(activeTraceId, 'goal_loaded', {
+          goalTitle: context.goal.title,
+          ventureName: context.venture.name,
+        });
+
+        if (context.goal.status !== 'active') {
+          throw new BadRequestException('Only active goals can be decomposed');
+        }
+
+        const treeInput =
+          mode === 'mock'
+            ? buildMockTaskTree(context.goal.title)
+            : await this.generateTaskTreeWithLlm(context, input.additionalContext, activeTraceId);
+
+        validateTaskTree(treeInput.root);
+        this.traceService.addStep(activeTraceId, 'tree_validated', {
+          nodeCount: flattenTaskTree(treeInput.root).length,
+        });
+
+        const persisted = await this.persistTaskTree(
+          context.goal.ventureId,
+          context.goal.id,
+          treeInput,
+        );
+        this.traceService.addStep(activeTraceId, 'tasks_persisted', {
+          taskCount: persisted.length,
+        });
+
+        return {
+          goalId: context.goal.id,
+          ventureId: context.goal.ventureId,
+          outputMethod: mode === 'mock' ? 'mock' : 'tool_call',
+          assistantMessage:
+            mode === 'mock'
+              ? `Decomposed "${context.goal.title}" into ${persisted.length} tasks (mock provider).`
+              : null,
+          tasks: persisted.map(toTaskResponse),
+        } satisfies Omit<DecomposeGoalResponse, 'traceId'>;
+      },
+      toOutput: (result) => ({
+        goalId: result.goalId,
+        taskCount: result.tasks.length,
+        outputMethod: result.outputMethod,
+      }),
+    });
+
+    return { traceId, ...result };
   }
 
   private async loadGoalContext(userId: string, goalId: string) {
@@ -90,7 +122,8 @@ export class DecompositionService {
       goal: typeof goals.$inferSelect;
       venture: typeof ventures.$inferSelect;
     },
-    additionalContext?: string,
+    additionalContext: string | undefined,
+    traceId: string,
   ): Promise<CreateTaskTreeInput> {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new ServiceUnavailableException(
@@ -106,6 +139,8 @@ export class DecompositionService {
       goalDeadline: context.goal.deadline,
       additionalContext,
     });
+
+    this.traceService.addStep(traceId, 'llm_request_started');
 
     const result = await generateText({
       model: this.llmProvider.getModel(),
@@ -128,7 +163,12 @@ export class DecompositionService {
       );
     }
 
-    return createTaskTreeInputSchema.parse(toolCall.input);
+    const parsed = createTaskTreeInputSchema.parse(toolCall.input);
+    this.traceService.addStep(traceId, 'llm_tool_call_received', {
+      nodeCount: flattenTaskTree(parsed.root).length,
+    });
+
+    return parsed;
   }
 
   private async persistTaskTree(

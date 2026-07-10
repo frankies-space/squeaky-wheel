@@ -4,3 +4,5 @@ export * from './api/ventures';
 export * from './api/goals';
 export * from './api/anti-stall';
 export * from './api/tasks';
+export * from './api/orchestrator';
+export * from './api/checkin';
