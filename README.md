@@ -61,6 +61,10 @@ Send any `Authorization: Bearer dev` header.
 | `GET` | `/ventures/:id` | Get venture |
 | `PATCH` | `/ventures/:id` | Update venture |
 | `DELETE` | `/ventures/:id` | Delete venture |
+| `GET` | `/ventures/:id/goals` | List goals for a venture |
+| `POST` | `/ventures/:id/goals` | Create goal |
+| `PATCH` | `/goals/:id` | Update goal |
+| `DELETE` | `/goals/:id` | Delete goal |
 
 ### Monorepo layout
 

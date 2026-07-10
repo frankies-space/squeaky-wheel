@@ -9,6 +9,7 @@
     "db:studio": "pnpm --filter @squeaky-wheel/backend db:studio",
     "test:phase": "node scripts/test-phases.mjs",
     "test:phase:1": "node scripts/test-phases.mjs 1",
+    "test:phase:2": "node scripts/test-phases.mjs 2",
     "test:phase:list": "node scripts/test-phases.mjs --list"
   },
   "engines": {

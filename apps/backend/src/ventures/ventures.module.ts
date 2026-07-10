@@ -8,5 +8,6 @@ import { VenturesService } from './ventures.service';
   imports: [AuthModule, UsersModule],
   controllers: [VenturesController],
   providers: [VenturesService],
+  exports: [VenturesService],
 })
 export class VenturesModule {}

@@ -258,6 +258,13 @@ export const venturesRelations = relations(ventures, ({ one, many }) => ({
   goals: many(goals),
 }));
 
+export const goalsRelations = relations(goals, ({ one }) => ({
+  venture: one(ventures, {
+    fields: [goals.ventureId],
+    references: [ventures.id],
+  }),
+}));
+
 export const schema = {
   users,
   ventures,
@@ -272,7 +279,9 @@ export const schema = {
   calendarConnections,
   usersRelations,
   venturesRelations,
+  goalsRelations,
 };
 
 export type DbUser = typeof users.$inferSelect;
 export type DbVenture = typeof ventures.$inferSelect;
+export type DbGoal = typeof goals.$inferSelect;

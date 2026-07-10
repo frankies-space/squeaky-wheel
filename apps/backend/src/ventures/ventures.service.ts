@@ -80,14 +80,14 @@ export class VenturesService {
   }
 
   async remove(userId: string, ventureId: string): Promise<void> {
-    await this.findOwnedVenture(userId, ventureId);
+    await this.ensureOwnedVenture(userId, ventureId);
 
     await this.db
       .delete(ventures)
       .where(and(eq(ventures.id, ventureId), eq(ventures.userId, userId)));
   }
 
-  private async findOwnedVenture(userId: string, ventureId: string) {
+  async ensureOwnedVenture(userId: string, ventureId: string) {
     const venture = await this.db.query.ventures.findFirst({
       where: and(eq(ventures.id, ventureId), eq(ventures.userId, userId)),
     });
@@ -101,5 +101,9 @@ export class VenturesService {
     }
 
     return venture;
+  }
+
+  private async findOwnedVenture(userId: string, ventureId: string) {
+    return this.ensureOwnedVenture(userId, ventureId);
   }
 }
