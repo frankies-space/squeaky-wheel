@@ -73,6 +73,10 @@ Send any `Authorization: Bearer dev` header.
 | `POST` | `/checkin/validate-task-count` | Rule-of-3 guard (`taskCount` must be 3) |
 | `GET` | `/orchestrator/traces` | Recent orchestrator runs (debug/monitoring) |
 | `GET` | `/orchestrator/traces/:id` | Single trace with step timeline |
+| `GET` | `/calendar/status` | Calendar connection status |
+| `GET` | `/calendar/oauth/start` | Start Google OAuth (mock in dev) |
+| `POST` | `/calendar/oauth/complete` | Complete OAuth with authorization code |
+| `POST` | `/calendar/connect/mock` | Connect mock calendar (dev/tests) |
 
 ### Monorepo layout
 

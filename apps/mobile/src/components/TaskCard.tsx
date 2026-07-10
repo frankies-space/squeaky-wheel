@@ -19,6 +19,7 @@ export function TaskCard({ task, locked }: TaskCardProps) {
         <Text style={styles.slot}>{task.slot}.</Text>
         <Text style={styles.title}>{task.title}</Text>
         {locked ? <Text style={styles.lock}>✓</Text> : null}
+        {task.calendarEventId ? <Text style={styles.calendar}>📅</Text> : null}
       </View>
 
       <View style={styles.tagRow}>
@@ -70,6 +71,9 @@ const styles = StyleSheet.create({
   lock: {
     fontSize: 16,
     color: colors.textMuted,
+  },
+  calendar: {
+    fontSize: 14,
   },
   tagRow: {
     flexDirection: 'row',

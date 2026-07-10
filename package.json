@@ -15,6 +15,7 @@
     "test:phase:4": "node scripts/test-phases.mjs 4",
     "test:phase:5": "node scripts/test-phases.mjs 5",
     "test:phase:6": "node scripts/test-phases.mjs 6",
+    "test:phase:7": "node scripts/test-phases.mjs 7",
     "test:anti-stall": "pnpm --filter @squeaky-wheel/backend test",
     "monitor:orchestrator": "node scripts/monitor-orchestrator.mjs",
     "test:phase:list": "node scripts/test-phases.mjs --list"

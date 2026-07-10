@@ -7,6 +7,7 @@ import {
 import { and, eq, inArray } from 'drizzle-orm';
 import type { TodayCheckinResponse } from '@squeaky-wheel/shared-types';
 import { AntiStallService } from '../anti-stall/anti-stall.service';
+import { CalendarEventsService } from '../calendar/calendar-events.service';
 import { DRIZZLE, type Database } from '../db/database.module';
 import { dailyPlanTasks, dailyPlans, tasks, ventures } from '../db/schema';
 import { DailyProposalService } from '../llm/daily-proposal.service';
@@ -20,6 +21,7 @@ export class CheckinService {
     private readonly dailyProposalService: DailyProposalService,
     private readonly antiStallService: AntiStallService,
     private readonly traceService: OrchestratorTraceService,
+    private readonly calendarEventsService: CalendarEventsService,
   ) {}
 
   async getToday(userId: string): Promise<TodayCheckinResponse> {
@@ -28,6 +30,20 @@ export class CheckinService {
     if (existing) {
       return existing;
     }
+    return this.dailyProposalService.proposeToday(userId, planDate);
+  }
+
+  async replanToday(userId: string): Promise<TodayCheckinResponse> {
+    const planDate = formatDate(new Date());
+    const plan = await this.db.query.dailyPlans.findFirst({
+      where: and(eq(dailyPlans.userId, userId), eq(dailyPlans.planDate, planDate)),
+    });
+
+    if (plan) {
+      await this.db.delete(dailyPlanTasks).where(eq(dailyPlanTasks.dailyPlanId, plan.id));
+      await this.db.delete(dailyPlans).where(eq(dailyPlans.id, plan.id));
+    }
+
     return this.dailyProposalService.proposeToday(userId, planDate);
   }
 
@@ -49,6 +65,7 @@ export class CheckinService {
 
         if (plan.status === 'confirmed' || plan.status === 'completed') {
           this.traceService.addStep(activeTraceId, 'already_confirmed', { planId: plan.id });
+          await this.ensureCalendarBlocked(userId, plan.id, activeTraceId);
           const existing = await this.loadExistingPlan(userId, planDate);
           if (!existing) {
             throw new NotFoundException('Daily plan could not be loaded');
@@ -81,6 +98,14 @@ export class CheckinService {
           taskIds,
         });
 
+        try {
+          await this.ensureCalendarBlocked(userId, plan.id, activeTraceId);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          this.traceService.addStep(activeTraceId, 'calendar_block_failed', { message });
+          throw error;
+        }
+
         const loaded = await this.loadExistingPlan(userId, planDate);
         if (!loaded) {
           throw new NotFoundException('Daily plan could not be loaded after confirm');
@@ -100,6 +125,27 @@ export class CheckinService {
     });
 
     return { ...result, traceId };
+  }
+
+  private async ensureCalendarBlocked(userId: string, planId: string, traceId: string) {
+    const planTasks = await this.db.query.dailyPlanTasks.findMany({
+      where: eq(dailyPlanTasks.dailyPlanId, planId),
+    });
+
+    if (planTasks.length === 0) {
+      return;
+    }
+
+    const needsBlock = planTasks.some((row) => !row.calendarEventId);
+    if (!needsBlock) {
+      return;
+    }
+
+    const blocked = await this.calendarEventsService.blockEventsForDailyPlan(userId, planId);
+    this.traceService.addStep(traceId, 'calendar_blocked', {
+      eventCount: blocked.events.length,
+      eventIds: blocked.events.map((event) => event.calendarEventId),
+    });
   }
 
   private async loadExistingPlan(
@@ -159,6 +205,7 @@ export class CheckinService {
         rationale: row.rationale ?? '',
         proposedStartTime: calendarSlot?.start ?? null,
         proposedEndTime: calendarSlot?.end ?? null,
+        calendarEventId: row.calendarEventId,
       };
     });
 

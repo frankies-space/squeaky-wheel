@@ -270,6 +270,7 @@ export class DailyProposalService {
           rationale: item.rationale,
           proposedStartTime: calendarSlot?.start ?? null,
           proposedEndTime: calendarSlot?.end ?? null,
+          calendarEventId: null,
         });
       }
 

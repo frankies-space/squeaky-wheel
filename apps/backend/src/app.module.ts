@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { AntiStallModule } from './anti-stall/anti-stall.module';
 import { AuthModule } from './auth/auth.module';
 import { CheckinModule } from './checkin/checkin.module';
+import { CalendarModule } from './calendar/calendar.module';
 import { DatabaseModule } from './db/database.module';
 import { GoalsModule } from './goals/goals.module';
 import { UsersModule } from './users/users.module';
@@ -25,6 +26,7 @@ import { VenturesModule } from './ventures/ventures.module';
     GoalsModule,
     AntiStallModule,
     CheckinModule,
+    CalendarModule,
   ],
 })
 export class AppModule {}

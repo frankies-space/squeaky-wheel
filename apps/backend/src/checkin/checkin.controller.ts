@@ -28,6 +28,12 @@ export class CheckinController {
     return this.checkinService.confirmToday(user.id);
   }
 
+  @Post('today/replan')
+  async replanToday(@CurrentUser() user: AuthUser): Promise<TodayCheckinResponse> {
+    await this.usersService.ensureUser(user);
+    return this.checkinService.replanToday(user.id);
+  }
+
   @Post('validate-task-count')
   async validateTaskCount(
     @CurrentUser() user: AuthUser,

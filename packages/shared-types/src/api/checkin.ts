@@ -17,6 +17,7 @@ export interface ProposedDailyTask {
   rationale: string;
   proposedStartTime: string | null;
   proposedEndTime: string | null;
+  calendarEventId: string | null;
 }
 
 export interface TodayCheckinResponse {

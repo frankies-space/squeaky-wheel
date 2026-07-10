@@ -51,6 +51,9 @@ export async function run(config) {
     }),
 
     await runTest('Confirm locks daily plan', async () => {
+      const replan = await request(config, 'POST', '/checkin/today/replan', { body: {} });
+      assert(replan.response.ok, `Expected 200 replan, got ${replan.response.status}`);
+
       const { response: getRes, json: proposal } = await request(config, 'GET', '/checkin/today');
       assert(getRes.ok, `Expected 200, got ${getRes.status}`);
       assert(proposal?.proposedTasks?.length === 3, 'need 3 proposed tasks');
