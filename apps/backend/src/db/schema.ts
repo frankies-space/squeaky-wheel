@@ -285,3 +285,4 @@ export const schema = {
 export type DbUser = typeof users.$inferSelect;
 export type DbVenture = typeof ventures.$inferSelect;
 export type DbGoal = typeof goals.$inferSelect;
+export type DbTask = typeof tasks.$inferSelect;

@@ -65,6 +65,8 @@ Send any `Authorization: Bearer dev` header.
 | `POST` | `/ventures/:id/goals` | Create goal |
 | `PATCH` | `/goals/:id` | Update goal |
 | `DELETE` | `/goals/:id` | Delete goal |
+| `POST` | `/goals/:id/decompose` | Decompose goal into AI task tree (`LLM_PROVIDER=mock` by default) |
+| `GET` | `/goals/:id/tasks` | List tasks for a goal |
 | `GET` | `/anti-stall/scores` | Urgency scores per venture (anti-stall engine) |
 
 ### Monorepo layout

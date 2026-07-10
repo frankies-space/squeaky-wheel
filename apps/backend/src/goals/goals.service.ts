@@ -75,7 +75,7 @@ export class GoalsService {
     await this.db.delete(goals).where(eq(goals.id, goalId));
   }
 
-  private async ensureOwnedGoal(userId: string, goalId: string) {
+  async ensureOwnedGoal(userId: string, goalId: string) {
     const row = await this.db
       .select({ goalId: goals.id })
       .from(goals)

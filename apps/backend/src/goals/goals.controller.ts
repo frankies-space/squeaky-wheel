@@ -12,13 +12,18 @@ import {
 } from '@nestjs/common';
 import type {
   CreateGoalRequest,
+  DecomposeGoalResponse,
   GoalResponse,
+  TaskResponse,
   UpdateGoalRequest,
 } from '@squeaky-wheel/shared-types';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthUser, CurrentUser } from '../auth/auth.service';
+import { DecompositionService } from '../llm/decomposition.service';
+import { TasksService } from '../tasks/tasks.service';
 import { UsersService } from '../users/users.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
+import { DecomposeGoalDto } from './dto/decompose-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { GoalsService } from './goals.service';
 
@@ -28,7 +33,32 @@ export class GoalsController {
   constructor(
     private readonly goalsService: GoalsService,
     private readonly usersService: UsersService,
+    private readonly decompositionService: DecompositionService,
+    private readonly tasksService: TasksService,
   ) {}
+
+  @Post(':id/decompose')
+  async decompose(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: DecomposeGoalDto,
+  ): Promise<DecomposeGoalResponse> {
+    await this.usersService.ensureUser(user);
+    return this.decompositionService.decomposeGoal({
+      userId: user.id,
+      goalId: id,
+      additionalContext: body.additionalContext,
+    });
+  }
+
+  @Get(':id/tasks')
+  async listTasks(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<TaskResponse[]> {
+    await this.usersService.ensureUser(user);
+    return this.tasksService.listByGoal(user.id, id);
+  }
 
   @Patch(':id')
   async update(
