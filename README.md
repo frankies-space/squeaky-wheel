@@ -69,6 +69,7 @@ Send any `Authorization: Bearer dev` header.
 | `GET` | `/goals/:id/tasks` | List tasks for a goal |
 | `GET` | `/anti-stall/scores` | Urgency scores per venture (anti-stall engine) |
 | `GET` | `/checkin/today` | Propose today's 3 tasks (anti-stall + mock calendar) |
+| `POST` | `/checkin/today/confirm` | Lock in today's 3 tasks |
 | `POST` | `/checkin/validate-task-count` | Rule-of-3 guard (`taskCount` must be 3) |
 | `GET` | `/orchestrator/traces` | Recent orchestrator runs (debug/monitoring) |
 | `GET` | `/orchestrator/traces/:id` | Single trace with step timeline |
@@ -92,7 +93,7 @@ pnpm dev:mobile
 Uses `EXPO_PUBLIC_API_URL` (default `http://localhost:3000`) and `EXPO_PUBLIC_AUTH_TOKEN=dev` for local backend auth bypass. On a physical device, point the API URL at your machine's LAN IP.
 
 Screens:
-- **Today** — placeholder until daily check-in (phase 6)
+- **Today** — daily check-in chat with 3 task cards, Looks good / Adjust, confirm flow
 - **Ventures** — list, create, edit, delete
 - **Goals** — per-venture list, create, edit, delete
 

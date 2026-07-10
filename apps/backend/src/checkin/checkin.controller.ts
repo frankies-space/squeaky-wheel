@@ -2,14 +2,16 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import type { TodayCheckinResponse } from '@squeaky-wheel/shared-types';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthUser, CurrentUser } from '../auth/auth.service';
-import { UsersService } from '../users/users.service';
 import { DailyProposalService } from '../llm/daily-proposal.service';
+import { UsersService } from '../users/users.service';
+import { CheckinService } from './checkin.service';
 import { ValidateTaskCountDto } from './dto/validate-task-count.dto';
 
 @Controller('checkin')
 @UseGuards(AuthGuard)
 export class CheckinController {
   constructor(
+    private readonly checkinService: CheckinService,
     private readonly dailyProposalService: DailyProposalService,
     private readonly usersService: UsersService,
   ) {}
@@ -17,7 +19,13 @@ export class CheckinController {
   @Get('today')
   async getToday(@CurrentUser() user: AuthUser): Promise<TodayCheckinResponse> {
     await this.usersService.ensureUser(user);
-    return this.dailyProposalService.proposeToday(user.id);
+    return this.checkinService.getToday(user.id);
+  }
+
+  @Post('today/confirm')
+  async confirmToday(@CurrentUser() user: AuthUser): Promise<TodayCheckinResponse> {
+    await this.usersService.ensureUser(user);
+    return this.checkinService.confirmToday(user.id);
   }
 
   @Post('validate-task-count')

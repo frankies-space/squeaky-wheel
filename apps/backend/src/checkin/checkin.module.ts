@@ -4,9 +4,11 @@ import { AuthModule } from '../auth/auth.module';
 import { LlmModule } from '../llm/llm.module';
 import { UsersModule } from '../users/users.module';
 import { CheckinController } from './checkin.controller';
+import { CheckinService } from './checkin.service';
 
 @Module({
   imports: [AuthModule, UsersModule, AntiStallModule, LlmModule],
   controllers: [CheckinController],
+  providers: [CheckinService],
 })
 export class CheckinModule {}
