@@ -70,9 +70,24 @@ Send any `Authorization: Bearer dev` header.
 
 ```
 apps/backend          NestJS API + Drizzle migrations
+apps/mobile           Expo app (ventures + goals screens)
 packages/shared-types Shared API/DB TypeScript types
 scripts/              Per-phase integration test runner
 ```
+
+### Mobile app (phase 2)
+
+```bash
+cp apps/mobile/.env.example apps/mobile/.env
+pnpm dev:mobile
+```
+
+Uses `EXPO_PUBLIC_API_URL` (default `http://localhost:3000`) and `EXPO_PUBLIC_AUTH_TOKEN=dev` for local backend auth bypass. On a physical device, point the API URL at your machine's LAN IP.
+
+Screens:
+- **Today** — placeholder until daily check-in (phase 6)
+- **Ventures** — list, create, edit, delete
+- **Goals** — per-venture list, create, edit, delete
 
 ### Testing per build phase
 

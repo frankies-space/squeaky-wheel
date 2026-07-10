@@ -4,6 +4,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev:backend": "pnpm --filter @squeaky-wheel/backend dev",
+    "dev:mobile": "pnpm --filter @squeaky-wheel/mobile start",
     "db:generate": "pnpm --filter @squeaky-wheel/backend db:generate",
     "db:migrate": "pnpm --filter @squeaky-wheel/backend db:migrate",
     "db:studio": "pnpm --filter @squeaky-wheel/backend db:studio",

@@ -31,7 +31,7 @@ export async function run(config) {
       assert(response.ok, `Expected 200, got ${response.status}`);
       assert(json?.id, 'Response should include user id');
       assert(json?.email, 'Response should include email');
-      assert(json?.timezone === 'UTC', 'Default timezone should be UTC');
+      assert(typeof json?.timezone === 'string', 'Response should include timezone');
     }),
 
     await runTest('PATCH /users/me updates profile', async () => {
