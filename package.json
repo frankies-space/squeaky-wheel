@@ -6,7 +6,10 @@
     "dev:backend": "pnpm --filter @squeaky-wheel/backend dev",
     "db:generate": "pnpm --filter @squeaky-wheel/backend db:generate",
     "db:migrate": "pnpm --filter @squeaky-wheel/backend db:migrate",
-    "db:studio": "pnpm --filter @squeaky-wheel/backend db:studio"
+    "db:studio": "pnpm --filter @squeaky-wheel/backend db:studio",
+    "test:phase": "node scripts/test-phases.mjs",
+    "test:phase:1": "node scripts/test-phases.mjs 1",
+    "test:phase:list": "node scripts/test-phases.mjs --list"
   },
   "engines": {
     "node": ">=20"

@@ -67,4 +67,23 @@ Send any `Authorization: Bearer dev` header.
 ```
 apps/backend          NestJS API + Drizzle migrations
 packages/shared-types Shared API/DB TypeScript types
+scripts/              Per-phase integration test runner
+```
+
+### Testing per build phase
+
+Integration tests aligned with the build order in `AGENTS.md`:
+
+```bash
+pnpm test:phase:list   # list all phases
+pnpm test:phase 1      # run phase 1 only (backend + auth + ventures)
+pnpm test:phase        # run all phases (unimplemented phases are skipped)
+```
+
+Requires the backend running (`pnpm dev:backend`) and migrations applied. Uses `AUTH_DEV_BYPASS` from `.env` by default (`Authorization: Bearer dev`).
+
+Override via env:
+
+```bash
+API_BASE_URL=http://localhost:3000 AUTH_TOKEN=dev pnpm test:phase 1
 ```
