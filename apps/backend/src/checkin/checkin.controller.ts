@@ -1,17 +1,23 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import type { TodayCheckinResponse } from '@squeaky-wheel/shared-types';
+import type {
+  EveningCheckinResponse,
+  TodayCheckinResponse,
+} from '@squeaky-wheel/shared-types';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthUser, CurrentUser } from '../auth/auth.service';
 import { DailyProposalService } from '../llm/daily-proposal.service';
 import { UsersService } from '../users/users.service';
 import { CheckinService } from './checkin.service';
+import { CompleteEveningCheckinDto } from './dto/complete-evening.dto';
 import { ValidateTaskCountDto } from './dto/validate-task-count.dto';
+import { EveningCheckinService } from './evening-checkin.service';
 
 @Controller('checkin')
 @UseGuards(AuthGuard)
 export class CheckinController {
   constructor(
     private readonly checkinService: CheckinService,
+    private readonly eveningCheckinService: EveningCheckinService,
     private readonly dailyProposalService: DailyProposalService,
     private readonly usersService: UsersService,
   ) {}
@@ -32,6 +38,21 @@ export class CheckinController {
   async replanToday(@CurrentUser() user: AuthUser): Promise<TodayCheckinResponse> {
     await this.usersService.ensureUser(user);
     return this.checkinService.replanToday(user.id);
+  }
+
+  @Get('evening')
+  async getEvening(@CurrentUser() user: AuthUser): Promise<EveningCheckinResponse> {
+    await this.usersService.ensureUser(user);
+    return this.eveningCheckinService.getEvening(user.id);
+  }
+
+  @Post('evening/complete')
+  async completeEvening(
+    @CurrentUser() user: AuthUser,
+    @Body() body: CompleteEveningCheckinDto,
+  ): Promise<EveningCheckinResponse> {
+    await this.usersService.ensureUser(user);
+    return this.eveningCheckinService.completeEvening(user.id, body);
   }
 
   @Post('validate-task-count')

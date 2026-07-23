@@ -206,6 +206,7 @@ export class CheckinService {
         proposedStartTime: calendarSlot?.start ?? null,
         proposedEndTime: calendarSlot?.end ?? null,
         calendarEventId: row.calendarEventId,
+        outcome: (row.outcome as 'done' | 'not_done' | 'partial' | null) ?? null,
       };
     });
 

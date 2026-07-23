@@ -6,6 +6,12 @@ interface CheckinFooterProps {
   confirming?: boolean;
   onConfirm: () => void;
   onAdjust: () => void;
+  /** Evening review mode (after morning confirm). */
+  eveningMode?: boolean;
+  eveningComplete?: boolean;
+  eveningReady?: boolean;
+  eveningSubmitting?: boolean;
+  onEveningComplete?: () => void;
 }
 
 export function CheckinFooter({
@@ -13,7 +19,39 @@ export function CheckinFooter({
   confirming,
   onConfirm,
   onAdjust,
+  eveningMode,
+  eveningComplete,
+  eveningReady,
+  eveningSubmitting,
+  onEveningComplete,
 }: CheckinFooterProps) {
+  if (eveningMode) {
+    if (eveningComplete) {
+      return (
+        <View style={styles.footer}>
+          <Text style={styles.confirmedLabel}>Evening review complete.</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.footer}>
+        <Pressable
+          style={[
+            styles.primaryButton,
+            (!eveningReady || eveningSubmitting) && styles.buttonDisabled,
+          ]}
+          onPress={onEveningComplete}
+          disabled={!eveningReady || eveningSubmitting}
+        >
+          <Text style={styles.primaryText}>
+            {eveningSubmitting ? 'Saving…' : 'Finish evening review'}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   if (confirmed) {
     return (
       <View style={styles.footer}>
